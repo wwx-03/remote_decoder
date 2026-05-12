@@ -1,0 +1,45 @@
+SET PATH=D:\Keil\ARM\ARMCLANG\Bin;C:\Program Files (x86)\STMicroelectronics\stlink_server;D:\STM32CubeCTL\STM32CubeCLT_1.17.0;D:\STM32CubeCTL\STM32CubeCLT_1.17.0\CMake\bin;D:\STM32CubeCTL\STM32CubeCLT_1.17.0\Ninja\bin;D:\STM32CubeCTL\STM32CubeCLT_1.17.0\GNU-tools-for-STM32\bin;D:\STM32CubeCTL\STM32CubeCLT_1.17.0\STLink-gdb-server\bin;D:\STM32CubeCTL\STM32CubeCLT_1.17.0\STM32CubeProgrammer\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;D:\Git\cmd;C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit\;C:\Program Files\dotnet\;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\CMake\bin;C:\Program Files (x86)\Tencent\微信web开发者工具\dll;C:\WINDOWS\system32\config\systemprofile\AppData\Local\Muse Hub\lib;D:\software\Qt\Tools\CMake_64\bin;D:\software\Qt\Tools\mingw1310_64\bin;D:\software\Qt\6.9.1\mingw_64\bin;D:\software\Qt\6.9.1\mingw_64;;C:\Program Files\NVIDIA Corporation\NVIDIA App\NvDLISR;C:\Users\wwx\AppData\Local\Programs\Python\Python313\Scripts\;C:\Users\wwx\AppData\Local\Programs\Python\Python313\;C:\Users\wwx\AppData\Local\Microsoft\WindowsApps;D:\env\mingw64\bin;C:\Users\wwx\AppData\Local\Programs\Microsoft VS Code\bin
+SET ARMCC6_ASMOPT=--diag_suppress=9931
+SET ARMCC6_CCOPT=--diag_suppress=9931
+SET ARMCC6_LINKOPT=--diag_suppress=9931
+SET CPU_TYPE=PY32F002Bx5
+SET CPU_VENDOR=Puya
+SET UV2_TARGET=PY32F002Bx5_Project
+SET CPU_CLOCK=0x00B71B00
+"D:\Keil\ARM\ARMCLANG\Bin\ArmAsm" --Via ".\output\startup_py32f002bxx._ia"
+"D:\Keil\ARM\ARMCLANG\Bin\ArmClang.exe" @".\output\main.__i"
+"D:\Keil\ARM\ARMCLANG\Bin\ArmClang.exe" @".\output\py32f002b_hal_msp.__i"
+"D:\Keil\ARM\ARMCLANG\Bin\ArmClang.exe" @".\output\py32f002b_it.__i"
+"D:\Keil\ARM\ARMCLANG\Bin\ArmClang.exe" @".\output\py32f002b_hal.__i"
+"D:\Keil\ARM\ARMCLANG\Bin\ArmClang.exe" @".\output\py32f002b_hal_adc.__i"
+"D:\Keil\ARM\ARMCLANG\Bin\ArmClang.exe" @".\output\py32f002b_hal_comp.__i"
+"D:\Keil\ARM\ARMCLANG\Bin\ArmClang.exe" @".\output\py32f002b_hal_cortex.__i"
+"D:\Keil\ARM\ARMCLANG\Bin\ArmClang.exe" @".\output\py32f002b_hal_crc.__i"
+"D:\Keil\ARM\ARMCLANG\Bin\ArmClang.exe" @".\output\py32f002b_hal_exti.__i"
+"D:\Keil\ARM\ARMCLANG\Bin\ArmClang.exe" @".\output\py32f002b_hal_flash.__i"
+"D:\Keil\ARM\ARMCLANG\Bin\ArmClang.exe" @".\output\py32f002b_hal_gpio.__i"
+"D:\Keil\ARM\ARMCLANG\Bin\ArmClang.exe" @".\output\py32f002b_hal_i2c.__i"
+"D:\Keil\ARM\ARMCLANG\Bin\ArmClang.exe" @".\output\py32f002b_hal_iwdg.__i"
+"D:\Keil\ARM\ARMCLANG\Bin\ArmClang.exe" @".\output\py32f002b_hal_lptim.__i"
+"D:\Keil\ARM\ARMCLANG\Bin\ArmClang.exe" @".\output\py32f002b_hal_pwr.__i"
+"D:\Keil\ARM\ARMCLANG\Bin\ArmClang.exe" @".\output\py32f002b_hal_rcc.__i"
+"D:\Keil\ARM\ARMCLANG\Bin\ArmClang.exe" @".\output\py32f002b_hal_rcc_ex.__i"
+"D:\Keil\ARM\ARMCLANG\Bin\ArmClang.exe" @".\output\py32f002b_hal_spi.__i"
+"D:\Keil\ARM\ARMCLANG\Bin\ArmClang.exe" @".\output\py32f002b_hal_tim.__i"
+"D:\Keil\ARM\ARMCLANG\Bin\ArmClang.exe" @".\output\py32f002b_hal_tim_ex.__i"
+"D:\Keil\ARM\ARMCLANG\Bin\ArmClang.exe" @".\output\py32f002b_hal_uart.__i"
+"D:\Keil\ARM\ARMCLANG\Bin\ArmClang.exe" @".\output\py32f002b_hal_usart.__i"
+"D:\Keil\ARM\ARMCLANG\Bin\ArmClang.exe" @".\output\system_py32f002b.__i"
+"D:\Keil\ARM\ARMCLANG\Bin\ArmClang.exe" @".\output\segger_rtt.__i"
+"D:\Keil\ARM\ARMCLANG\Bin\ArmClang.exe" @".\output\segger_rtt_printf.__i"
+"D:\Keil\ARM\ARMCLANG\Bin\ArmClang.exe" @".\output\board.__i"
+"D:\Keil\ARM\ARMCLANG\Bin\ArmClang.exe" @".\output\application.__i"
+"D:\Keil\ARM\ARMCLANG\Bin\ArmClang.exe" @".\output\button.__i"
+"D:\Keil\ARM\ARMCLANG\Bin\ArmClang.exe" @".\output\remote_decoder.__i"
+"D:\Keil\ARM\ARMCLANG\Bin\ArmClang.exe" @".\output\ticker.__i"
+"D:\Keil\ARM\ARMCLANG\Bin\ArmClang.exe" @".\output\display.__i"
+"D:\Keil\ARM\ARMCLANG\Bin\ArmClang.exe" @".\output\gpio.__i"
+"D:\Keil\ARM\ARMCLANG\Bin\ArmClang.exe" @".\output\beep.__i"
+"D:\Keil\ARM\ARMCLANG\Bin\ArmClang.exe" @".\output\counter.__i"
+"D:\Keil\ARM\ARMCLANG\Bin\ArmLink" --Via ".\Output\Project.lnp"
+"D:\Keil\ARM\ARMCLANG\Bin\fromelf.exe" ".\Output\Project.axf" --i32combined --output ".\Output\Project.hex"

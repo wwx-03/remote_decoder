@@ -1,0 +1,198 @@
+version: "4.1"
+name: Project
+type: ARM
+deviceName: null
+packDir: null
+srcDirs:
+  - ../Applications
+virtualFolder:
+  name: <virtual_root>
+  files: []
+  folders:
+    - name: Application
+      files: []
+      folders:
+        - name: MDK-ARM
+          files:
+            - path: ../MDK-ARM/startup_py32f002bxx.s
+          folders: []
+        - name: User
+          files: []
+          folders:
+            - name: Core
+              files:
+                - path: ../Core/Src/main.c
+                - path: ../Core/Src/py32f002b_hal_msp.c
+                - path: ../Core/Src/py32f002b_it.c
+              folders: []
+    - name: Drivers
+      files: []
+      folders:
+        - name: PY32F002B_HAL_Driver
+          files:
+            - path: ../Drivers/PY32F002B_HAL_Driver/Src/py32f002b_hal.c
+            - path: ../Drivers/PY32F002B_HAL_Driver/Src/py32f002b_hal_adc.c
+            - path: ../Drivers/PY32F002B_HAL_Driver/Src/py32f002b_hal_comp.c
+            - path: ../Drivers/PY32F002B_HAL_Driver/Src/py32f002b_hal_cortex.c
+            - path: ../Drivers/PY32F002B_HAL_Driver/Src/py32f002b_hal_crc.c
+            - path: ../Drivers/PY32F002B_HAL_Driver/Src/py32f002b_hal_exti.c
+            - path: ../Drivers/PY32F002B_HAL_Driver/Src/py32f002b_hal_flash.c
+            - path: ../Drivers/PY32F002B_HAL_Driver/Src/py32f002b_hal_gpio.c
+            - path: ../Drivers/PY32F002B_HAL_Driver/Src/py32f002b_hal_i2c.c
+            - path: ../Drivers/PY32F002B_HAL_Driver/Src/py32f002b_hal_iwdg.c
+            - path: ../Drivers/PY32F002B_HAL_Driver/Src/py32f002b_hal_lptim.c
+            - path: ../Drivers/PY32F002B_HAL_Driver/Src/py32f002b_hal_pwr.c
+            - path: ../Drivers/PY32F002B_HAL_Driver/Src/py32f002b_hal_rcc.c
+            - path: ../Drivers/PY32F002B_HAL_Driver/Src/py32f002b_hal_rcc_ex.c
+            - path: ../Drivers/PY32F002B_HAL_Driver/Src/py32f002b_hal_spi.c
+            - path: ../Drivers/PY32F002B_HAL_Driver/Src/py32f002b_hal_tim.c
+            - path: ../Drivers/PY32F002B_HAL_Driver/Src/py32f002b_hal_tim_ex.c
+            - path: ../Drivers/PY32F002B_HAL_Driver/Src/py32f002b_hal_uart.c
+            - path: ../Drivers/PY32F002B_HAL_Driver/Src/py32f002b_hal_usart.c
+          folders: []
+        - name: CMSIS
+          files:
+            - path: ../Core/Src/system_py32f002b.c
+          folders: []
+    - name: ::CMSIS
+      files: []
+      folders: []
+dependenceList: []
+outDir: build
+miscInfo:
+  uid: 2097ea908faa7ce579c4b46aa0637b90
+targets:
+  PY32F002Bx5_Project:
+    cppPreprocessAttrs:
+      defineList:
+        - USE_HAL_DRIVER
+        - PY32F002Bx5
+      incList:
+        - ../Core/Inc
+        - ../Drivers/CMSIS/Include
+        - ../Drivers/CMSIS/Device/PY32F0xx/Include
+        - ../Drivers/PY32F002B_HAL_Driver/Inc
+        - ../Applications/Inc
+        - .cmsis/include
+        - ../MDK-ARM/RTE/_PY32F002Bx5_Project
+        - ../Applications
+        - ../embedded_cxx/custom
+      libList: []
+    excludeList:
+      - <virtual_root>/Applications
+      - ../Applications/Src
+    settings: {}
+    toolchain: AC6
+    toolchainConfigMap:
+      AC6:
+        archExtensions: ""
+        cpuType: Cortex-M0+
+        floatingPointHardware: none
+        options:
+          version: 3
+          afterBuildTasks: []
+          asm-compiler:
+            $use: asm-auto
+          beforeBuildTasks: []
+          c/cpp-compiler:
+            CXX_FLAGS: -fno-exceptions
+            language-c: c99
+            language-cpp: c++17
+            one-elf-section-per-function: true
+            optimization: level-1
+            short-enums#wchar: true
+            turn-Warning-into-errors: true
+            warnings: ac5-like-warnings
+          global:
+            output-debug-info: enable
+          linker:
+            misc-controls: --diag_suppress=L6329
+            output-format: elf
+            ro-base: "0x00000000"
+            rw-base: "0x20000000"
+        scatterFilePath: ../MDK-ARM/Objects/Project.sct
+        storageLayout:
+          RAM:
+            - id: 1
+              isChecked: false
+              mem:
+                size: "0x0"
+                startAddr: "0x0"
+              noInit: false
+              tag: RAM
+            - id: 2
+              isChecked: false
+              mem:
+                size: "0x0"
+                startAddr: "0x0"
+              noInit: false
+              tag: RAM
+            - id: 3
+              isChecked: false
+              mem:
+                size: "0x0"
+                startAddr: "0x0"
+              noInit: false
+              tag: RAM
+            - id: 1
+              isChecked: true
+              mem:
+                size: "0xc00"
+                startAddr: "0x20000000"
+              noInit: false
+              tag: IRAM
+            - id: 2
+              isChecked: false
+              mem:
+                size: "0x0"
+                startAddr: "0x0"
+              noInit: false
+              tag: IRAM
+          ROM:
+            - id: 1
+              isChecked: false
+              isStartup: false
+              mem:
+                size: "0x0"
+                startAddr: "0x0"
+              tag: ROM
+            - id: 2
+              isChecked: false
+              isStartup: false
+              mem:
+                size: "0x0"
+                startAddr: "0x0"
+              tag: ROM
+            - id: 3
+              isChecked: false
+              isStartup: false
+              mem:
+                size: "0x0"
+                startAddr: "0x0"
+              tag: ROM
+            - id: 1
+              isChecked: true
+              isStartup: true
+              mem:
+                size: "0x6000"
+                startAddr: "0x8000000"
+              tag: IROM
+            - id: 2
+              isChecked: false
+              isStartup: false
+              mem:
+                size: "0x0"
+                startAddr: "0x0"
+              tag: IROM
+        useCustomScatterFile: false
+    uploadConfigMap:
+      JLink:
+        baseAddr: ""
+        bin: ""
+        cpuInfo:
+          cpuName: "null"
+          vendor: "null"
+        otherCmds: ""
+        proType: 1
+        speed: 8000
+    uploader: JLink
