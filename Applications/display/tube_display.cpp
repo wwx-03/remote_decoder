@@ -45,6 +45,7 @@ void TubeDisplay::Blink(uint8_t digit, uint32_t brightMs, uint32_t darkMs) {
 	brightMs_ = brightMs;
 	darkMs_ = darkMs;
 	blinkCounter_ = 0;
+	SetDigitEnabled(lastBlinkDigit_, true);
 	lastBlinkDigit_ = ResolveBlinkDigit();
 	timer_.Start();
 }

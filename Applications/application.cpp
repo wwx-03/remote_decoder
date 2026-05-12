@@ -21,22 +21,57 @@
 
 #include "application.hpp"
 
+#include <log/log>
+
 #include "board/board.hpp"
 
 namespace {
+	// event
 	static constexpr inline uint32_t kEventIdUpButtonTriggered = (1U << 0);
 	static constexpr inline uint32_t kEventIdEnterButtonClicked = (1U << 1);
-	static constexpr inline uint32_t kEventIdDownButtonTriggered = (1U << 2);
-	static constexpr inline uint32_t kEventIdCounterTimerTriggered = (1U << 3);
-	static constexpr inline uint32_t kEventIdFrameReceived = (1U << 4);
+	static constexpr inline uint32_t kEventIdEnterButtonPressing = (1U << 2);
+	static constexpr inline uint32_t kEventIdDownButtonTriggered = (1U << 3);
+	static constexpr inline uint32_t kEventIdCounterTimerTriggered = (1U << 4);
+	static constexpr inline uint32_t kEventIdFrameReceived = (1U << 5);
+	static constexpr inline uint32_t kEventIdEnterSetting = (1U << 6);
+	static constexpr inline uint32_t kEventIdEnterLearning = (1U << 7);
+
+	// button
+	static constexpr inline uint32_t kMaxButtonClickedDuration = 1000;
+	static constexpr inline uint32_t kButtonPressingTriggeredPeriod = 100;
+
+	// display
+	static constexpr inline uint32_t kBlinkBrightDuration = 500;
+	static constexpr inline uint32_t kBlinkDarkDuration = 200;
+
+	static constexpr inline uint32_t kMaxWaitInSettingMode = 15;
+	static constexpr inline uint32_t kMaxWaitInLearningMode = 30;
 
 	static constexpr inline uint32_t kSettingDigitCount = 4;
-	static constexpr inline const uint32_t kDigitToNumber[kSettingDigitCount] = {1, 60, 3600, 36000};
+	static constexpr inline const uint32_t kDigitToNumber[kSettingDigitCount] = {1, 10, 60, 3600};
 
 	static constexpr inline uint32_t kMaxTime = 9 * 3600 + 9 * 60 + 59;
+
+	static constexpr inline const char *kStateToString[] = {
+		"Unknown",
+		"Idle",
+		"Working",
+		"Setting",
+		"Learning",
+	};
+
+	static uint32_t NumberToTimeFormat(uint32_t number) {
+		uint32_t hours = number / 3600;
+		uint32_t minutes = (number % 3600) / 60;
+		uint32_t seconds = number % 60;
+		return hours * 1000 + minutes * 100 + seconds;
+	}
 }
 
 Application::Application() {
+
+	LOG_INIT();
+
 	counterTimer_.Create(+[](void *args) {
 		auto *self = static_cast<Application *>(args);
 		self->eventId_ |= kEventIdCounterTimerTriggered;
@@ -52,31 +87,52 @@ void Application::Start() {
 	auto *upButton = board.GetButton(config::kUpButtonIndex);
 	upButton->OnReleased(+[](void *args, uint32_t duration) {
 		auto *self = static_cast<Application *>(args);
-		if (duration < 1000) {
+		if (duration < kMaxButtonClickedDuration) {
 			self->eventId_ |= kEventIdUpButtonTriggered;
 		}
 	}, this);
 
 	upButton->OnPressed(+[](void *args, uint32_t duration) {
 		auto *self = static_cast<Application *>(args);
-		self->eventId_ |= kEventIdUpButtonTriggered;
+		if (duration >= kMaxButtonClickedDuration && duration % kButtonPressingTriggeredPeriod == 0) {
+			self->eventId_ |= kEventIdUpButtonTriggered;
+		}
 	}, this);
 
 	auto *enterButton = board.GetButton(config::kEnterButtonIndex);
 	enterButton->OnReleased(+[](void *args, uint32_t duration) {
 		auto *self = static_cast<Application *>(args);
-		self->eventId_ |= kEventIdEnterButtonClicked;
+		if (duration <= kMaxButtonClickedDuration) {
+			self->eventId_ |= kEventIdEnterButtonClicked;
+		} else if (duration <= 3000) {
+			self->eventId_ |= kEventIdEnterSetting;
+		}
+		self->eventId_ &= ~kEventIdEnterButtonPressing;
+	}, this);
+
+	enterButton->OnPressed(+[](void *args, uint32_t duration) {
+		auto *self = static_cast<Application *>(args);
+		if (duration > 5000) {
+			if (!(self->eventId_ & kEventIdEnterButtonPressing)) {
+				self->eventId_ |= kEventIdEnterButtonPressing;
+				self->eventId_ |= kEventIdEnterLearning;
+			}
+		}
 	}, this);
 
 	auto *downButton = board.GetButton(config::kDownButtonIndex);
 	downButton->OnReleased(+[](void *args, uint32_t duration) {
 		auto *self = static_cast<Application *>(args);
-		self->eventId_ |= kEventIdDownButtonTriggered;
+		if (duration < kMaxButtonClickedDuration) {
+			self->eventId_ |= kEventIdDownButtonTriggered;
+		}
 	}, this);
 
 	downButton->OnPressed(+[](void *args, uint32_t duration) {
 		auto *self = static_cast<Application *>(args);
-		self->eventId_ |= kEventIdDownButtonTriggered;
+		if (duration >= kMaxButtonClickedDuration && duration % kButtonPressingTriggeredPeriod == 0) {
+			self->eventId_ |= kEventIdDownButtonTriggered;
+		}
 	}, this);
 
 	auto *remoteDecoder = board.GetRemoteDecoder();
@@ -86,9 +142,14 @@ void Application::Start() {
 		self->eventId_ |= kEventIdFrameReceived;
 	}, this);
 
+	remoteDecoder->Start();
 	SetState(kDeviceStateIdle);
 
+	auto *buzzer = board.GetBuzzer();
+	buzzer->Single(100);
+	
 	while (1) {
+
 		if (eventId_ & kEventIdUpButtonTriggered) {
 			eventId_ &= ~kEventIdUpButtonTriggered;
 			UpButtonTriggeredEventHandler();
@@ -113,6 +174,16 @@ void Application::Start() {
 			eventId_ &= ~kEventIdFrameReceived;
 			FrameRxdEventHandler();
 		}
+
+		if (eventId_ & kEventIdEnterSetting) {
+			eventId_ &= ~kEventIdEnterSetting;
+			EnterButtonPressedEventHandler();
+		}
+
+		if (eventId_ & kEventIdEnterLearning) {
+			eventId_ &= ~kEventIdEnterLearning;
+			EnterButtonLongPressedEventHandler();
+		}
 	}
 }
 
@@ -123,12 +194,15 @@ void Application::LoadStoredData() {
 	config::StoredData data{};
 	storage->Load(config::kStoredDataAddress, reinterpret_cast<uint8_t *>(&data), sizeof(data));
 
-	if (data.valid_ == 0xA5) {
+	if (data.valid_ == config::kStoredDataValid) {
 		time_ = data.time_;
 		for (size_t i = 0; i < data.numOfValidFrames_; ++i) {
 			frames_[i] = data.frames_[i];
 		}
 		numOfValidFrames_ = data.numOfValidFrames_;
+		LOGI("Loaded stored data: time: %lu, numOfValidFrames: %u\r\n", time_, numOfValidFrames_);
+	} else {
+		LOGW("No valid stored data found\r\n");
 	}
 }
 
@@ -142,13 +216,14 @@ void Application::SaveStoredData() {
 		data.frames_[i] = frames_[i];
 	}
 	data.numOfValidFrames_ = numOfValidFrames_;
-	data.valid_ = 0xA5;
+	data.valid_ = config::kStoredDataValid;
 
 	storage->Save(config::kStoredDataAddress, reinterpret_cast<const uint8_t *>(&data), sizeof(data));
 }
 
 void Application::SetState(DeviceState state) {
 	if (state_ != state) {
+		LOGI("State changed: %s -> %s\r\n", kStateToString[state_], kStateToString[state]);
 		state_ = state;
 		OnStateChanged();
 	}
@@ -158,27 +233,35 @@ void Application::OnStateChanged() {
 
 	auto &board = Board::GetInstance();
 	auto *display = board.GetDisplay();
+	auto *relay = board.GetRelay();
 
 	switch (state_) {
 		case kDeviceStateIdle:
 			counter_ = time_;
 			digit_ = 0;
+			relay->SetState(false);
 			counterTimer_.Stop();
 			display->ExitLearningScreen();
-			display->DisplayNumber(time_);
+			display->Unblink();
+			display->DisplayNumber(NumberToTimeFormat(time_));
 			break;
 		case kDeviceStateWorking:
+			relay->SetState(true);
 			counterTimer_.Start();
-			display->DisplayNumber(counter_);
+			display->DisplayNumber(NumberToTimeFormat(counter_));
 			break;
 		case kDeviceStateSetting:
-			display->DisplayNumber(time_);
-			display->Blink(digit_, 500, 500);
+			counter_ = kMaxWaitInSettingMode;
+			counterTimer_.Start();
+			display->DisplayNumber(NumberToTimeFormat(time_));
+			display->Blink(digit_, kBlinkBrightDuration, kBlinkDarkDuration);
 			break;
 		case kDeviceStateLearning:
-			counter_ = 30;
+			counter_ = kMaxWaitInLearningMode;
 			counterTimer_.Start();
 			display->EnterLearningScreen();
+			break;
+		case kDeviceStateUnknown:
 			break;
 	}
 
@@ -189,18 +272,22 @@ void Application::OnStateChanged() {
 }
 
 void Application::EnterButtonClickedEventHandler() {
+	auto &board = Board::GetInstance();
 	if (state_ == kDeviceStateIdle) {
 		SetState(kDeviceStateWorking);
+	} else if (state_ == kDeviceStateWorking) {
+		SetState(kDeviceStateIdle);
 	} else if (state_ == kDeviceStateSetting) {
 		// 切换位数
 		if (++digit_ >= kSettingDigitCount) {
 			digit_ = 0;
 		}
 		dirty_ = true;
-		auto &board = Board::GetInstance();
 		auto *display = board.GetDisplay();
-		display->Blink(digit_, 500, 500);
+		display->Blink(digit_, kBlinkBrightDuration, kBlinkDarkDuration);
 	}
+	auto *buzzer = board.GetBuzzer();
+	buzzer->Single(25);
 }
 
 void Application::EnterButtonPressedEventHandler() {
@@ -209,6 +296,9 @@ void Application::EnterButtonPressedEventHandler() {
 	} else if (state_ == kDeviceStateSetting) {
 		SetState(kDeviceStateIdle);
 	}
+	auto &board = Board::GetInstance();
+	auto *buzzer = board.GetBuzzer();
+	buzzer->Repeat(25, 25, 2);
 }
 
 void Application::EnterButtonLongPressedEventHandler() {
@@ -217,6 +307,9 @@ void Application::EnterButtonLongPressedEventHandler() {
 	} else if (state_ == kDeviceStateSetting) {
 		SetState(kDeviceStateIdle);
 	}
+	auto &board = Board::GetInstance();
+	auto *buzzer = board.GetBuzzer();
+	buzzer->Repeat(25, 25, 3);
 }
 
 void Application::UpButtonTriggeredEventHandler() {
@@ -227,10 +320,13 @@ void Application::UpButtonTriggeredEventHandler() {
 		} else {
 			time_ = kMaxTime;
 		}
+		counter_ = kMaxWaitInSettingMode;
 		dirty_ = true;
 		auto &board = Board::GetInstance();
 		auto *display = board.GetDisplay();
-		display->DisplayNumber(time_);
+		display->DisplayNumber(NumberToTimeFormat(time_));
+		auto *buzzer = board.GetBuzzer();
+		buzzer->Single(25);
 	}
 }
 
@@ -242,38 +338,64 @@ void Application::DownButtonTriggeredEventHandler() {
 		} else {
 			time_ = 0;
 		}
+		counter_ = kMaxWaitInSettingMode;
 		dirty_ = true;
 		auto &board = Board::GetInstance();
 		auto *display = board.GetDisplay();
-		display->DisplayNumber(time_);
+		display->DisplayNumber(NumberToTimeFormat(time_));
+		auto *buzzer = board.GetBuzzer();
+		buzzer->Single(25);
 	}
 }
 
 void Application::CounterTimerTriggeredEventHandler() {
 	if (counter_ > 0) {
 		--counter_;
-		auto &board = Board::GetInstance();
-		auto *display = board.GetDisplay();
-		display->DisplayNumber(counter_);
+		if (state_ == kDeviceStateWorking) {
+			auto &board = Board::GetInstance();
+			auto *display = board.GetDisplay();
+			display->DisplayNumber(NumberToTimeFormat(counter_));
+		}
 	} else {
 		SetState(kDeviceStateIdle);
 	}
 }
 
 void Application::FrameRxdEventHandler() {
+	LOGI("Frame received: %lu, address: %lu, key: %lu\r\n", frameRxd_, frameRxd_ & 0x0FFFFF, frameRxd_ >> 20);
+	auto &board = Board::GetInstance();
+	auto *buzzer = board.GetBuzzer();
 	if (state_ == kDeviceStateIdle) {
-		for (auto &f : frames_) {
-			if (f == frameRxd_) {
-				SetState(kDeviceStateWorking);
-				return;
-			}
+		if (IsValidFrame(frameRxd_)) {
+			SetState(kDeviceStateWorking);
+			buzzer->Single(25);
+		}
+	} else if (state_ == kDeviceStateWorking) {
+		if (IsValidFrame(frameRxd_)) {
+			SetState(kDeviceStateIdle);
+			buzzer->Single(25);
 		}
 	} else if (state_ == kDeviceStateLearning) {
-		if (++numOfValidFrames_ >= config::kMaxFrameMembers) {
-			numOfValidFrames_ = 0;
+		if (numOfValidFrames_ < config::kMaxFrameMembers) {
+			frames_[numOfValidFrames_++] = frameRxd_;
+		} else {
+			// 缓冲区满，平移数据并覆盖最旧的帧
+			for (size_t i = 1; i < config::kMaxFrameMembers; ++i) {
+				frames_[i - 1] = frames_[i];
+			}
+			frames_[config::kMaxFrameMembers - 1] = frameRxd_;
+			// numOfValidFrames_ 保持为 config::kMaxFrameMembers
 		}
-		frames_[numOfValidFrames_] = frameRxd_;
 		dirty_ = true;
 		SetState(kDeviceStateIdle);
 	}
+}
+
+bool Application::IsValidFrame(uint32_t frame) {
+	for (size_t i = 0; i < numOfValidFrames_; ++i) {
+		if (frames_[i] == frame) {
+			return true;
+		}
+	}
+	return false;
 }

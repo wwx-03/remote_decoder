@@ -18,6 +18,7 @@ namespace config {
 
 	static constexpr inline uint32_t Address(uint32_t sector, uint32_t page) { return FLASH_BASE + (sector << 12) + (page << 7); }
 	static constexpr inline uint32_t kStoredDataAddress = Address(5, 31);
+	static constexpr inline uint32_t kStoredDataValid = 0xA5;
 
 	struct StoredData {
 		uint32_t time_{};

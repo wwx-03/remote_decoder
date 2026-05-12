@@ -26,6 +26,7 @@ void PassiveBuzzer::Single(uint32_t duration) {
 	beepDuration_ = duration;
 	count_ = 0;
 	duration_ = 0;
+	isBeep_ = true;
 	timer_.Start();
 }
 
@@ -41,7 +42,7 @@ void PassiveBuzzer::Repeat(uint32_t beepDuration, uint32_t dumbDuration, uint32_
 }
 
 void PassiveBuzzer::UpdatePinState() {
-	if (state_ != kStateIdle) {
+	if (isBeep_) {
 		TogglePinState();
 	}
 }
@@ -53,6 +54,7 @@ void PassiveBuzzer::TimerCallback() {
 
 	if (kStateSingle == state_) {
 		if (++duration_ >= beepDuration_) {
+			isBeep_ = false;
 			state_ = kStateIdle;
 			timer_.Stop();
 		}

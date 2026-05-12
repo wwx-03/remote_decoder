@@ -20,6 +20,7 @@ IcRemoteDecoder::IcRemoteDecoder(TIM_TypeDef *timx, uint32_t channel, GPIO_TypeD
 	htim_.Init.Period = 0xFFFF;
 	htim_.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	htim_.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+	htim_.Init.RepetitionCounter = 0;
 	HAL_TIM_Base_Init(&htim_);
 
 	TIM_IC_InitTypeDef configIC{};
@@ -27,7 +28,7 @@ IcRemoteDecoder::IcRemoteDecoder(TIM_TypeDef *timx, uint32_t channel, GPIO_TypeD
 	configIC.ICSelection = TIM_ICSELECTION_DIRECTTI;
 	configIC.ICPrescaler = TIM_ICPSC_DIV1;
 	configIC.ICFilter = 0;
-	HAL_TIM_IC_ConfigChannel(&htim_, &configIC, channel);
+	HAL_TIM_IC_ConfigChannel(&htim_, &configIC, channel_);
 
 	timer_.Create(+[](void *args) {
 		auto *self = static_cast<IcRemoteDecoder *>(args);
@@ -67,7 +68,7 @@ void IcRemoteDecoder::ParseFrame() {
 
 	parseComplete_ = false;
 
-	if (kMinBit0Duration < bit0Duration_ && bit0Duration_ < kMaxBit0Duration) {
+	if (kMinSyncDuration < bit0Duration_ && bit0Duration_ < kMaxSyncDuration) {
 		frameCache_ = 0;
 		bitCount_ = 0;
 		parsing_ = true;

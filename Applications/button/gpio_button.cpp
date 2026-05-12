@@ -20,6 +20,8 @@ GpioButton::GpioButton(GPIO_TypeDef *gpiox, uint16_t pin)
 		auto *self = static_cast<GpioButton *>(args);
 		self->TimerCallback();
 	}, this, kTimerPeriod);
+
+	timer_.Start();
 }
 
 GpioButton::~GpioButton() {

@@ -6,7 +6,8 @@
 #include "timer/timer.hpp"
 
 enum DeviceState : uint8_t {
-	kDeviceStateIdle = 0,
+	kDeviceStateUnknown = 0,
+	kDeviceStateIdle,
 	kDeviceStateWorking,
 	kDeviceStateSetting,
 	kDeviceStateLearning,
@@ -23,7 +24,7 @@ public:
 	
 private:
 	volatile uint32_t eventId_{};
-	DeviceState state_{};
+	DeviceState state_{kDeviceStateUnknown};
 	Timer counterTimer_{};
 	uint32_t time_{5 * 60};
 	uint32_t counter_{};
@@ -51,4 +52,6 @@ private:
 	void DownButtonTriggeredEventHandler();
 	void CounterTimerTriggeredEventHandler();
 	void FrameRxdEventHandler();
+
+	bool IsValidFrame(uint32_t frame);
 };

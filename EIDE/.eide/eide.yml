@@ -57,6 +57,14 @@ virtualFolder:
     - name: ::CMSIS
       files: []
       folders: []
+    - name: Middlewares
+      files: []
+      folders:
+        - name: SEGGER
+          files:
+            - path: ../embedded_cxx/custom/log/segger/SEGGER_RTT.c
+            - path: ../embedded_cxx/custom/log/segger/SEGGER_RTT_printf.c
+          folders: []
 dependenceList: []
 outDir: build
 miscInfo:
@@ -68,6 +76,7 @@ targets:
         - USE_HAL_DRIVER
         - PY32F002Bx5
       incList:
+        - .
         - ../Core/Inc
         - ../Drivers/CMSIS/Include
         - ../Drivers/CMSIS/Device/PY32F0xx/Include
@@ -81,7 +90,8 @@ targets:
     excludeList:
       - <virtual_root>/Applications
       - ../Applications/Src
-    settings: {}
+    settings:
+      debugger: cortex-debug
     toolchain: AC6
     toolchainConfigMap:
       AC6:
@@ -190,8 +200,8 @@ targets:
         baseAddr: ""
         bin: ""
         cpuInfo:
-          cpuName: "null"
-          vendor: "null"
+          cpuName: PY32F002Bx5
+          vendor: Puya
         otherCmds: ""
         proType: 1
         speed: 8000
